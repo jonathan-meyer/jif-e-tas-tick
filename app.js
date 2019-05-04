@@ -17,7 +17,7 @@ if (!String.prototype.quote) {
 
     function createButton(topic) {
       return $("<button>")
-        .addClass("btn btn-primary mr-3 topic-button")
+        .addClass("btn btn-primary m-1 topic-button")
         .data("topic", topic)
         .text(topic);
     }
@@ -69,7 +69,7 @@ if (!String.prototype.quote) {
       );
 
       buttons
-        .addClass("d-flex justify-content-center p-3")
+        .addClass("d-flex justify-content-center flex-wrap p-3")
         .append(config.topics.map(createButton))
         .on("click", ".topic-button", function(e) {
           var topic = $(this).data("topic");
@@ -82,7 +82,7 @@ if (!String.prototype.quote) {
               api_key: config.apiKey,
               limit: config.limit,
               offset: 0,
-              rating: "G",
+              rating: "PG",
               lang: "en",
               q: topic
             });
@@ -99,15 +99,21 @@ if (!String.prototype.quote) {
                   data.data.map(item =>
                     $("<figure>")
                       .css({ width: 200, height: 200 })
-                      .addClass("m-1 p-2 float-left figure overflow-hidden")
+                      .addClass("m-1 p-2 float-left figure overflow-hidden giphy")
                       .append(
                         $("<figcaption>")
                           .addClass("figure-caption text-center font-weight-bold")
                           .text("Rating: " + item.rating.toUpperCase()),
                         $("<img>")
-                          .addClass("figure-img img-fluid rounded")
-                          .attr("src", item.images["480w_still"].url)
+                          .addClass("figure-img img-fluid rounded giphy-still")
+                          .attr("src", item.images.fixed_width_still.url)
                           .attr("alt", item.title)
+                          .show(),
+                        $("<img>")
+                          .addClass("figure-img img-fluid rounded giphy-ani")
+                          .attr("src", item.images.fixed_width.url)
+                          .attr("alt", item.title)
+                          .hide()
                       )
                   )
                 );
@@ -116,7 +122,13 @@ if (!String.prototype.quote) {
           }
         });
 
-      tabs.addClass("h-100 w-100").append(config.topics.map(createTab));
+      tabs
+        .addClass("h-100 w-100")
+        .append(config.topics.map(createTab))
+        .on("click", ".giphy", function(e) {
+          $(".giphy-still", this).toggle();
+          $(".giphy-ani", this).toggle();
+        });
 
       form.on("submit", function(e) {
         e.preventDefault();
