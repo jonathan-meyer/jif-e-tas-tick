@@ -1,14 +1,33 @@
+if (!String.prototype.quote) {
+  String.prototype.quote = function() {
+    return JSON.stringify(this); // since IE8
+  };
+}
+
 (function($) {
   jQuery.fn.app = function(settings) {
     var config = {
       topics: [],
-      search: "dog",
       limit: 10,
       apiKey: "IQEA4udUrOUrtdhBTpOQm7KWIkwPr6fI",
       apiUrl: "https://api.giphy.com/v1/gifs/search"
     };
 
     if (settings) jQuery.extend(config, settings);
+
+    function createButton(topic) {
+      return $("<button>")
+        .addClass("btn btn-primary mr-3 topic-button")
+        .data("topic", topic)
+        .text(topic);
+    }
+
+    function createTab(topic) {
+      return $("<div>")
+        .addClass("tab")
+        .attr("data-topic", topic)
+        .hide();
+    }
 
     this.each(function() {
       var el = $(this).addClass("app container");
@@ -51,61 +70,49 @@
       );
 
       buttons
-        .append(
-          $("<div>")
-            .addClass("d-flex justify-content-center p-3")
-            .append(
-              config.topics.map(topic =>
-                $("<button>")
-                  .addClass("btn btn-primary mr-3")
-                  .text(topic)
-              )
-            )
-        )
-        .on("click", ".btn", function(e) {
-          console.log("click: ", $(this).text());
+        .addClass("d-flex justify-content-center p-3")
+        .append(config.topics.map(createButton))
+        .on("click", ".topic-button", function(e) {
+          var topic = $(this).data("topic");
+          var tabEl = $("div[data-topic=" + topic.quote() + "]");
 
           var url =
             config.apiUrl +
             "?" +
             $.param({
               api_key: config.apiKey,
-              q: config.search,
               limit: config.limit,
               offset: 0,
               rating: "G",
-              lang: "en"
+              lang: "en",
+              q: topic
             });
 
-          console.log(url);
+          $(".tab").hide();
+          tabEl.show();
 
-          // $.ajax({ url })
-          //   .then(data => {
-          //     console.log({ data });
-          //     data.data.map(item => {
-          //       el.append(
-          //         $("<div>")
-          //           .css({ width: 200, height: 200 })
-          //           .addClass("m-3")
-          //           .append(
-          //             $("<img>")
-          //               .attr("src", item.images["480w_still"].url)
-          //               .attr("alt", item.title)
-          //               .addClass("img-thumbnail img-fluid rounded")
-          //           )
-          //       ).addClass("d-flex flex-wrap");
-          //     });
-          //   })
-          //   .catch(err => console.error(err));
+          $.ajax({ url })
+            .then(data => {
+              console.log({ data });
+
+              tabEl.append(
+                data.data.map(item =>
+                  $("<div>")
+                    .css({ width: 200, height: 200 })
+                    .addClass("m-1 float-left")
+                    .append(
+                      $("<img>")
+                        .attr("src", item.images["480w_still"].url)
+                        .attr("alt", item.title)
+                        .addClass("img-thumbnail img-fluid rounded")
+                    )
+                )
+              );
+            })
+            .catch(err => console.error(err));
         });
 
-      tabs.addClass("w-100 h-100 border").append(
-        config.topics.map(topic =>
-          $("<div>")
-            .addClass("tab")
-            .attr("id", topic)
-        )
-      );
+      tabs.addClass("w-100 h-100").append(config.topics.map(createTab));
 
       form.on("submit", function(e) {
         e.preventDefault();
@@ -116,11 +123,16 @@
           .reduce((a, c) => a + c.value, "")
           .trim();
 
-        console.log({ newTopic }, $(this).serializeArray());
+        if (newTopic.length > 0) {
+          console.log({ newTopic });
 
-        $(this)
-          .trigger("reset")
-          .focus();
+          $(".buttons").append(createButton(newTopic));
+          $(".tabs").append(createTab(newTopic));
+
+          $(this)
+            .trigger("reset")
+            .focus();
+        }
       });
     });
 
