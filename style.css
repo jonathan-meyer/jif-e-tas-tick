@@ -1,0 +1,11 @@
+body {
+  background-image: url("./cars-carisation-06.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+#root {
+  height: 100vh;
+}
