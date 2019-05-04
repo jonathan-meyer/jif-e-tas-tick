@@ -33,21 +33,20 @@ if (!String.prototype.quote) {
       var el = $(this).addClass("app container");
       var buttons = $("<div>").addClass("buttons");
       var tabs = $("<div>").addClass("tabs");
-      var form = $("<form>")
-        .addClass("form-inline")
-        .append(
-          $("<div>")
-            .addClass("form-group mx-sm-3 mb-2")
-            .append(
-              $("<input>")
-                .addClass("form-control")
-                .attr({ type: "text", name: "newTopic" })
-            ),
-          $("<button>")
-            .addClass("btn btn-primary mb-2")
-            .attr("type", "submit")
-            .text("Add")
-        );
+      var form = $("<form>").append(
+        $("<div>")
+          .addClass("form-group")
+          .append(
+            $("<label>").text("Add a new Make or Model"),
+            $("<input>")
+              .addClass("form-control")
+              .attr({ type: "text", name: "newTopic" })
+          ),
+        $("<button>")
+          .addClass("btn btn-primary mb-2")
+          .attr("type", "submit")
+          .text("Add")
+      );
 
       el.append(
         $("<div>")
@@ -91,28 +90,33 @@ if (!String.prototype.quote) {
           $(".tab").hide();
           tabEl.show();
 
-          $.ajax({ url })
-            .then(data => {
-              console.log({ data });
+          if (tabEl.children().length == 0) {
+            $.ajax({ url })
+              .then(data => {
+                console.log({ data });
 
-              tabEl.append(
-                data.data.map(item =>
-                  $("<div>")
-                    .css({ width: 200, height: 200 })
-                    .addClass("m-1 float-left")
-                    .append(
-                      $("<img>")
-                        .attr("src", item.images["480w_still"].url)
-                        .attr("alt", item.title)
-                        .addClass("img-thumbnail img-fluid rounded")
-                    )
-                )
-              );
-            })
-            .catch(err => console.error(err));
+                tabEl.addClass("clearfix").append(
+                  data.data.map(item =>
+                    $("<figure>")
+                      .css({ width: 200, height: 200 })
+                      .addClass("m-1 p-2 float-left figure overflow-hidden")
+                      .append(
+                        $("<figcaption>")
+                          .addClass("figure-caption text-center font-weight-bold")
+                          .text("Rating: " + item.rating.toUpperCase()),
+                        $("<img>")
+                          .addClass("figure-img img-fluid rounded")
+                          .attr("src", item.images["480w_still"].url)
+                          .attr("alt", item.title)
+                      )
+                  )
+                );
+              })
+              .catch(err => console.error(err));
+          }
         });
 
-      tabs.addClass("w-100 h-100").append(config.topics.map(createTab));
+      tabs.addClass("h-100 w-100").append(config.topics.map(createTab));
 
       form.on("submit", function(e) {
         e.preventDefault();
